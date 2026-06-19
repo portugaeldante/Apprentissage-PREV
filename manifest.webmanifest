@@ -1,0 +1,16 @@
+{
+  "name": "ZS VHP — Apprendre la prévention incendie",
+  "short_name": "VHP Apprendre",
+  "description": "Module de formation à la prévention incendie — Zone de secours Vesdre-Hoëgne & Plateau.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F7F5",
+  "theme_color": "#37352F",
+  "lang": "fr",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
