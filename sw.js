@@ -3,7 +3,8 @@
    - Police + icônes = précachées. Images du cours (cours-img/**, ~18 Mo) = cache RUNTIME (cache-first)
      dès qu'un chapitre est lu en ligne → disponibles hors-ligne ensuite (trop lourd à précacher).
    Cache propre à l'apprentissage : modifier l'outil de prévention ne l'invalide plus (fin des interruptions). */
-const CACHE = 'vhp-apprendre-v1';
+const CACHE = 'vhp-apprendre-v2';
+const IMG_MAX = 300;   // plafond du cache d'images de cours (145 pages PREV1 + marge) → évite un cache qui gonfle sans limite
 const IS_LOCAL = (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1');
 const ASSETS = [
   './',
@@ -58,10 +59,20 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req).then((resp) => {
-        if (resp && resp.status === 200 && resp.type === 'basic') { const copy = resp.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        if (resp && resp.status === 200 && resp.type === 'basic') { const copy = resp.clone(); caches.open(CACHE).then((c) => c.put(req, copy).then(() => trimImageCache(c))); }
         return resp;
       }).catch(() => cached);
       return cached || network;
     })
   );
 });
+
+// Plafonne le cache des images de cours (cache-first sans limite sinon) : supprime les plus anciennes au-delà de IMG_MAX.
+async function trimImageCache(cache) {
+  try {
+    const keys = await cache.keys();
+    const imgs = keys.filter((k) => k.url.indexOf('cours-img/') !== -1);
+    const over = imgs.length - IMG_MAX;
+    for (let i = 0; i < over; i++) { await cache.delete(imgs[i]); }
+  } catch (e) {}
+}
