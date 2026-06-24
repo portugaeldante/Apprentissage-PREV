@@ -23,7 +23,7 @@ installé/partagé seul (PWA).
 > Un bandeau d'avertissement s'affiche automatiquement si le stockage est indisponible.
 
 ## Déployer
-Pousser sur un dépôt + activer GitHub Pages (branche `main`, racine). Le lien « Quitter » renvoie vers
-l'outil de prévention (`https://portugaeldante.github.io/VHP-outil-prevention/`).
+Pousser sur un dépôt + activer GitHub Pages (branche `master`, racine). Module **totalement autonome** :
+aucun bouton/lien ne renvoie vers un autre outil.
 
 > Hors-ligne : la page est en *network-first* ; les images de cours se mettent en cache au fil de la lecture.

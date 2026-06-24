@@ -527,7 +527,6 @@ body.skin-clair .reset-btn{border-color:#d8e0ec;}
 <div id="fxLayer"></div>
 
 <!-- HEADER -->
-<button class="tool-back" onclick="backToTool()" title="Revenir à l'accueil de l'outil — toujours accessible">← Outil</button>
 <div class="hdr" id="appHdr">
   <div class="logo">
     <span class="logo-icon" id="logoIco"><svg class="gi fill" style="color:#e8622c"><use href="#gi-flame"/></svg></span>
@@ -3220,13 +3219,9 @@ function startExamFromChapter(chap){
   applySkin('clair'); startMode(key);
 }
 function learnQuit(){ LEARN.active=false; LEARN.guided=false; learnResetTransient(); document.getElementById('learnReadZone').style.display='none'; if(LEARN.chap){ openChapter(LEARN.chap); } else { backToMenu(); } }
-/* Retour à l'outil global : si on est dans l'iframe de index.html, on demande l'accueil au parent ;
-   sinon (page ouverte seule) on ouvre l'outil. Toujours possible de repiloter depuis les sections. */
-function backToTool(){
-  try{ if(window.top!==window && window.top.goView){ window.top.goView('home'); return; } }catch(e){}
-  try{ if(window.parent!==window && window.parent.goView){ window.parent.goView('home'); return; } }catch(e){}
-  try{ window.top.location.href='https://portugaeldante.github.io/VHP-outil-prevention/'; }catch(e){ window.location.href='https://portugaeldante.github.io/VHP-outil-prevention/'; }
-}
+/* Module d'apprentissage AUTONOME : plus de retour vers l'outil (indépendant).
+   Conservé en no-op au cas où la fonction serait encore référencée quelque part. */
+function backToTool(){ /* indépendant : ne redirige plus vers l'outil */ }
 </script>
 <script>
 /* Auto-soin dev local : tuer tout service worker périmé + vider les caches, recharger UNE fois si un
