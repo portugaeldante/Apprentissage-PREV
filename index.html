@@ -1059,6 +1059,24 @@ const SECTIONS = {
            chapters:['Généralités','Structure & Rf','Évacuation & désenfumage','Détection & alerte','Signalisation & éclairage','Moyens d’extinction','Chauffage','Parkings','Ascenseurs','Contrôles & périodicités','Logements, kots & colocations','Hébergements touristiques','Lieux accessibles au public','Lieux de travail','Notes & dérogations'] }
 };
 Object.values(SECTIONS).forEach(sec=>sec.chapters.forEach(c=>{ if(!MODES['chap:'+c]) MODES['chap:'+c]={title:c,lives:true,srs:true,isChapter:true}; }));
+
+/* ── TUYAUX D'EXAMEN ──────────────────────────────────────────
+   On TAGUE des questions déjà présentes (q.tip) — AUCUNE duplication :
+   chaque question reste dans son chapitre ET est rassemblée dans la
+   section « Tuyaux d'examen ». Pour ajouter un tuyau : poser l'id ci-dessous. */
+const TIP_LABELS = { cpi:'CPI', planu:"Planification d'urgence", prev:'Prévention' };
+const TIP_IDS = {
+  cpi:['cpi_loi1','p12_2','p12_12','p12_14','p12_5','p12_7','p12_8','p12_9','p12_11','p12_15','p12_33','p12_10','p15_1','p15_2','p15_4','p15_10','p13_1','p13_2','p13_4','d_o1','aig05','ent01'],
+  planu:['pu_1','pu_2','pu_4','pu_8','pu_9','pu_10','pu_11','pu_14','pu_15','pu_20','pu_21','pu_24','pu_25','pu_26','pu_27','pu_31','pu_36','pu_40'],
+  prev:['p23_9','p23_53','st_rf_def','st_ei_match','p23_11','p23_12','nz_evac_01','nz_evac_22','p14_5','nc2','nz_gen_05','nz_gen_06','der-cloze5','p25_1','nz_detect_05','nz_detect_06','aig01','aig02','asi17']
+};
+// Question « texte de loi du CPI » (manquait dans la banque) — sourcée Cours 1 / CPI (slides 16-17)
+QUESTIONS.push({id:"cpi_loi1",kind:"flash",section:"prev1",chap:"Le conseiller & chaîne de sécurité",diff:2,ref:"CPI / Cours 1",q:"Quel texte de loi encadre les missions de prévention des zones de secours (le cadre dans lequel agit le CPI) ? Et quel texte régit sa responsabilité ?",a:"Les missions de prévention des zones de secours sont fixées par un ==arrêté royal : l'AR du 19 décembre 2014==.\n\nLa ==responsabilité== du CPI, elle, relève de la ==loi du 15 mai 2007== (sécurité civile, art. 159 à 166) : en cas de faute « ordinaire » (erreur), c'est la ==zone de secours== qui indemnise."});
+(function(){ var byId={}; QUESTIONS.forEach(function(q){ byId[q.id]=q; });
+  Object.keys(TIP_IDS).forEach(function(b){ TIP_IDS[b].forEach(function(id){ if(byId[id]) byId[id].tip=b; }); });
+  try{ var miss=[]; Object.keys(TIP_IDS).forEach(function(b){ TIP_IDS[b].forEach(function(id){ if(!byId[id]) miss.push(id); }); }); if(miss.length) console.warn('[tuyaux] ids introuvables:', miss.join(', ')); }catch(e){}
+})();
+['cpi','planu','prev','all'].forEach(function(t){ MODES['tip:'+t]={ title:(t==='all'?'Tous les tuyaux':'Tuyaux — '+TIP_LABELS[t]), lives:true, srs:true }; });
 const CHAP_IMG = {'Le conseiller & chaîne de sécurité':'Généralités','Détecteurs de fumée':'Détection & alerte','Plan d’évacuation & 112':'Évacuation & désenfumage','Monoxyde de carbone':'Détection & alerte','Sécurité cuisine':'Chauffage','Le feu':'Chauffage','Principes de prévention':'a_truss','Moyens de lutte':'medal','Sécurité par thème':'a_valve','Brûlés':'medal'};
 function chapIco(c){ const key = ICONS[c] ? c : (CHAP_IMG[c]||c); return ico(key, CHAP_ICON[c]||gis('gi-book')); }
 
@@ -1555,9 +1573,19 @@ function renderHome(){
       '<span class="sc-count mono">'+n+' Q</span><span class="sc-chevron">›</span>';
     g.appendChild(card);
   });
+  // — Carte « Tuyaux d'examen » : sujets clés à maîtriser pour l'examen —
+  var nTip=QUESTIONS.filter(function(q){return q.tip;}).length;
+  if(nTip>0){
+    var tcard=document.createElement('div'); tcard.className='section-card'; tcard.onclick=openTips;
+    tcard.innerHTML='<span class="sc-icon">'+gis('gi-star')+'</span>'+
+      '<div class="sc-body"><div class="sc-title">Tuyaux d\'examen</div>'+
+        '<div class="sc-sub">Sujets clés — CPI · Planification d\'urgence · Prévention</div></div>'+
+      '<span class="sc-count mono">'+nTip+' Q</span><span class="sc-chevron">›</span>';
+    g.appendChild(tcard);
+  }
 }
 function showHome(){
-  LEARN.active=false;
+  LEARN.active=false; inTips=false;
   var _lz=document.getElementById('learnReadZone'); if(_lz)_lz.style.display='none';
   applySkin('clair'); stopTimer(); menuChap=null;
   document.getElementById('playZone').style.display='none';
@@ -1570,6 +1598,7 @@ function showHome(){
   renderHome();
 }
 function selectSection(key){
+  inTips=false;
   state.section=key; menuChap=null;
   renderProgress();   // maîtrise de la section choisie (PREV1 ≠ Normes)
   document.getElementById('homeZone').style.display='none';
@@ -1592,7 +1621,45 @@ function backToMenu(){
   document.getElementById('scoreZone').classList.remove('show');
   document.getElementById('infoZone').classList.remove('show');
   document.getElementById('menuZone').style.display='block';
+  if(inTips){ openTips(); return; }
   if(menuChap) openChapter(menuChap); else { document.getElementById('chapterGrid').className='mode-grid'; renderMenu(); }
+}
+
+/* ── Section « Tuyaux d'examen » : rassemble les questions taguées q.tip (sans duplication) ── */
+var inTips=false;
+function openTips(){
+  inTips=true; menuChap=null; LEARN.active=false; state.section='prev1';
+  document.getElementById('homeZone').style.display='none';
+  document.getElementById('playZone').style.display='none';
+  document.getElementById('scoreZone').classList.remove('show');
+  document.getElementById('infoZone').classList.remove('show');
+  var _h=document.getElementById('appHdr'); if(_h)_h.style.display='';
+  var _t=document.getElementById('topRow'); if(_t)_t.style.display='none';
+  document.getElementById('menuZone').style.display='block';
+  document.getElementById('secTitle').textContent="Tuyaux d'examen";
+  document.getElementById('backBtn').textContent='← Accueil';
+  var lblC=document.getElementById('lblChapters'); if(lblC) lblC.style.display='none';
+  var cg=document.getElementById('chapterGrid'); if(cg){ cg.innerHTML=''; cg.style.display='none'; }
+  var lblM=document.getElementById('lblModes'); if(lblM){ lblM.style.display=''; lblM.textContent='Choisis un bloc'; }
+  var sg=document.getElementById('specialGrid'); sg.className='mode-grid'; sg.style.display=''; sg.innerHTML='';
+  var blocks=[{k:'cpi',sub:'Missions, conditions, texte de loi, responsabilité, CO, détecteurs, électricité, avis hébergement.'},
+              {k:'planu',sub:'Disciplines, 3 niveaux de phase, plans (PGUI/PPUI/PPI/PIU), contrôle des installations temporaires.'},
+              {k:'prev',sub:'Objectifs, réaction/résistance au feu, calcul d’évacuation, annexes des normes de base, hébergements.'}];
+  blocks.forEach(function(b){
+    var n=QUESTIONS.filter(function(q){return q.tip===b.k;}).length;
+    var card=document.createElement('div'); card.className='mode-card';
+    card.onclick=(function(kk){return function(){ startMode('tip:'+kk); };})(b.k);
+    card.innerHTML='<div class="mc-top"><span class="mc-icon">'+gis('gi-star')+'</span><span class="mc-best mono">'+n+' Q</span></div>'+
+      '<div class="mc-title">'+TIP_LABELS[b.k]+'</div><div class="mc-sub">'+b.sub+'</div>';
+    sg.appendChild(card);
+  });
+  var nAll=QUESTIONS.filter(function(q){return q.tip;}).length;
+  var allc=document.createElement('div'); allc.className='mode-card feature';
+  allc.onclick=function(){ startMode('tip:all'); };
+  allc.innerHTML='<div class="mc-top"><span class="mc-icon">'+gis('gi-shuffle')+'</span><span class="mc-best mono">'+nAll+' Q</span></div>'+
+    '<div class="mc-title">Tous les tuyaux mélangés</div><div class="mc-sub">Révision complète des sujets d’examen, tous blocs confondus.</div>';
+  sg.appendChild(allc);
+  try{window.scrollTo(0,0);}catch(e){}
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1613,6 +1680,9 @@ function startMode(key){
   } else if(key==='chrono'){
     const pool=QUESTIONS.filter(q=>q.section===state.section && (q.kind==='vf'||q.kind==='cloze'));
     state.queue=shuffle(pool).slice(0,10);
+  } else if(key.indexOf('tip:')===0){
+    var _tb=key.slice(4);   // tuyaux d'examen : file bâtie sur le tag q.tip (toutes sections confondues)
+    state.queue=orderProgressive(QUESTIONS.filter(function(q){ return _tb==='all' ? !!q.tip : q.tip===_tb; }));
   } else if(m.isSub){
     state.queue=orderProgressive(QUESTIONS.filter(q=>q.section===state.section && q.chap===m.chap && (q.sub||'Général')===m.sub));   // un sous-chapitre
   } else if(m.isChapter){
