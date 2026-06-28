@@ -651,7 +651,7 @@ body.skin-clair .reset-btn{border-color:#d8e0ec;}
 </div>
 <div class="combo-flash" id="comboFlash"></div>
 
-<div class="foot">
+<div class="foot" id="appFoot">
   Outil pédagogique — ne remplace pas la réglementation. Sources : règlement communal de Verviers (30/05/2011), AR « Normes de base », NBN B 61-001/002, WALLEX. Progression enregistrée localement dans le navigateur.
 </div>
 
@@ -1377,6 +1377,7 @@ function orderProgressive(arr){
 function renderMenu(){
   var _h=document.getElementById('appHdr'); if(_h)_h.style.display='';
   var _t=document.getElementById('topRow'); if(_t)_t.style.display='';
+  var _f=document.getElementById('appFoot'); if(_f)_f.style.display='';
   const mast=masteryByChapter();
   // — Chapitres —
   const cg=document.getElementById('chapterGrid'); cg.className='mode-grid'; cg.innerHTML='';
@@ -1424,6 +1425,7 @@ function openChapter(chap){
   renderProgress();   // maîtrise à jour (section courante)
   var _h=document.getElementById('appHdr'); if(_h)_h.style.display='';
   var _t=document.getElementById('topRow'); if(_t)_t.style.display='';
+  var _f=document.getElementById('appFoot'); if(_f)_f.style.display='';
   document.getElementById('homeZone').style.display='none';
   document.getElementById('menuZone').style.display='block';
   document.getElementById('secTitle').textContent=chap;
@@ -1600,6 +1602,7 @@ function showHome(){
   document.getElementById('menuZone').style.display='none';
   var _h=document.getElementById('appHdr'); if(_h)_h.style.display='none';
   var _t=document.getElementById('topRow'); if(_t)_t.style.display='none';
+  var _f=document.getElementById('appFoot'); if(_f)_f.style.display='';
   document.getElementById('homeZone').style.display='block';
   renderHome();
 }
@@ -1641,6 +1644,7 @@ function openTips(){
   document.getElementById('infoZone').classList.remove('show');
   var _h=document.getElementById('appHdr'); if(_h)_h.style.display='';
   var _t=document.getElementById('topRow'); if(_t)_t.style.display='none';
+  var _f=document.getElementById('appFoot'); if(_f)_f.style.display='';
   document.getElementById('menuZone').style.display='block';
   document.getElementById('secTitle').textContent="Tuyaux d'examen";
   document.getElementById('backBtn').textContent='← Accueil';
@@ -1707,9 +1711,11 @@ function startMode(key){
   updateStreak();
   applySkin(m.theme||'clair');
   document.getElementById('menuZone').style.display='none';
+  var _t=document.getElementById('topRow'); if(_t)_t.style.display='none';   // mobile : la question reste au-dessus de la ligne de flottaison
   document.getElementById('scoreZone').classList.remove('show');
   document.getElementById('infoZone').classList.remove('show');
   document.getElementById('playZone').style.display='block';
+  try{window.scrollTo(0,0);}catch(e){}
   document.getElementById('lives').style.display=m.lives?'flex':'none';
   const tEl=document.getElementById('timer');
   if(key==='chrono'){ tEl.style.display='inline-block'; startTimer(60); } else tEl.style.display='none';
@@ -2899,6 +2905,8 @@ function showLearnZone(){
   document.getElementById('infoZone').classList.remove('show');
   document.getElementById('scoreZone').classList.remove('show');
   var h=document.getElementById('appHdr'); if(h)h.style.display='';
+  var _t=document.getElementById('topRow'); if(_t)_t.style.display='none';   // mobile : ne pas pousser le cours sous le tableau de bord
+  var _f=document.getElementById('appFoot'); if(_f)_f.style.display='none';
   document.getElementById('learnReadZone').style.display='block';
   try{window.scrollTo(0,0);}catch(e){}
 }
